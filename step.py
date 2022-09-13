@@ -1,3 +1,4 @@
+from dataclasses import dataclass, asdict
 from typing import Tuple
 from copy import copy
 
@@ -16,7 +17,8 @@ def step(s: State, a: Action) -> Tuple[State, int]:
     """
     if s.is_terminal:
         return s, 0
-    s_new = copy(s)  # update from the current state
+
+    s_new = copy(s.__dict__)  # update from the current state
     if a is Action.STICK:
         # Play out the dealer's cards and return the final reward and terminal state.
         dealer_sum = s.dealer_first_card.value()
@@ -28,11 +30,12 @@ def step(s: State, a: Action) -> Tuple[State, int]:
             reward = 0  # draw
         else:
             reward = -1 # lose
-        s_new.is_terminal = True
+        s_new["is_terminal"] = True
     elif a is Action.HIT:
-        s_new.player_sum += Card.sample().value()
+        s_new["player_sum"] += Card.sample().value()
         reward = 0
-        if s_new.player_sum > 21 or s_new.player_sum < 1:
+        if s_new["player_sum"] > 21 or s_new["player_sum"] < 1:
             reward = -1  # lose
-            s_new.is_terminal = True
+            s_new["is_terminal"] = True
+    s_new = State(**s_new)
     return s_new, reward

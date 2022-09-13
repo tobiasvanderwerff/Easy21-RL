@@ -15,7 +15,7 @@ class CardColor(Enum):
         return CardColor.RED if random.random() < 1 / 3 else CardColor.BLACK
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Card:
     val: int
     color: CardColor
@@ -38,8 +38,15 @@ class Action(Enum):
     HIT = 2
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class State:
     dealer_first_card: Card
     player_sum: int
     is_terminal: bool = False
+
+
+def init_state() -> State:
+    # Draw two random black cards at init time.
+    dealer_init_val = random.randint(CARD_VALS[0], CARD_VALS[-1])
+    player_init_val = random.randint(CARD_VALS[0], CARD_VALS[-1])
+    return State(Card(dealer_init_val, CardColor.BLACK), player_init_val)

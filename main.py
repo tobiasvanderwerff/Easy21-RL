@@ -16,7 +16,7 @@ state_action_values = mc_control(n_episodes)
 # for s, av in state_action_values.items():
 #     print(f"dealer card: {s.dealer_first_card.value()}, player sum: {s.player_sum}: {av}")
 
-max_action_val = np.zeros((len(CARD_VALS), 22))
+max_action_val = np.zeros((len(CARD_VALS), 21))
 for s, av in state_action_values.items():
     dealer_first_card = s.dealer_first_card.value()
     player_sum = s.player_sum

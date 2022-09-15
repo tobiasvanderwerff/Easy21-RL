@@ -9,25 +9,38 @@ from mc import mc_control
 from sarsa import sarsa_lambda
 
 
-def main(lmbda: float = 0, use_mc: bool = True):
+def main(lmbda: float = 0):
     """
     Args:
         lmbda: lambda parameter for SARSA-lambda
-        use_mc: whether to use Monte-Carlo control. Otherwise, use SARSA-lambda.
     """
-    if use_mc:
-        n_episodes = 500000
-        state_action_values = mc_control(n_episodes)
-    else:
-        n_episodes = 1000
-        state_action_values = sarsa_lambda(n_episodes, lmbda=0)
+    print("Running MC control.")
+    q_mc = mc_control(n_episodes=500000)
+
+    print("Running SARSA-lambda control.")
+    lmbdas = np.arange(0, 1.1, 0.1)
+    msas = {lm: 0 for lm in lmbdas}
+    for lmbda in lmbdas:
+        q_sarsa = sarsa_lambda(n_episodes=1000, lmbda=lmbda)
+        msa = sum((q_mc[s][a] - q_sarsa[s][a]) ** 2 for s, av in q_mc.items() for a, v in av.items()) / (len(q_mc) * 2)
+        msas[lmbda] = msa
+
+    # Plot SARSA-lambda mean-squared error compared to MC value function.
+    # plt.figure()
+    # plt.plot(list(msas.keys()), list(msas.values()))
+    # plt.xlabel("lambda")
+    # plt.ylabel("mean-squared error")
+    # plt.title("TD-lambda performance as a function of lambda")
+    # plt.tight_layout()
+    # plt.waitforbuttonpress()
+    # return
 
     # print(f"State-action values after {n_episodes} episodes:")
     # for s, av in state_action_values.items():
     #     print(f"dealer card: {s.dealer_first_card.value()}, player sum: {s.player_sum}: {av}")
 
     max_action_val = np.zeros((len(CARD_VALS), 21))
-    for s, av in state_action_values.items():
+    for s, av in q_mc.items():
         if s.is_terminal:
             continue
         dealer_first_card = s.dealer_first_card.value()
@@ -62,6 +75,5 @@ def main(lmbda: float = 0, use_mc: bool = True):
 
 if __name__ == "__main__":
     lmbda = 1.0
-    use_mc = False
 
-    main(lmbda, use_mc)
+    main(lmbda)

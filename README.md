@@ -22,3 +22,8 @@ Bootstrapping using Temporal Difference learning (TD) means that we update a gue
 Action-value function using MC evaluation and decaying epsilon-greedy policy improvement (asymptotically converges to the optimal action-value function):
 
 ![monte-carlo](img/mc-500000.png)
+
+
+## SARSA-lambda
+
+![sarsa-lambda](img/SARSA_performance.png)

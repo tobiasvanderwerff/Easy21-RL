@@ -7,6 +7,7 @@ from step import step
 from mc import epsilon_greedy_sample, get_epsilon
 
 import numpy as np
+from tqdm import tqdm
 
 
 def sarsa_lambda(n_episodes: int, lmbda: float, calculate_msa: bool = False, 

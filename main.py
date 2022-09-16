@@ -4,6 +4,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
 from step import step
 from util import State, Card, Action, CardColor, CARD_VALS, init_state
@@ -16,14 +17,13 @@ def main(lmbda: float = 0):
     Args:
         lmbda: lambda parameter for SARSA-lambda
     """
-    print("Running MC control.")
     q_mc = mc_control(n_episodes=500000)
 
-    print("Running SARSA-lambda control.")
     lmbdas = np.arange(0, 1.1, 0.1)
     msas = {lmb: 0 for lmb in lmbdas}
     lambda_to_msa_per_episode = {0.0: None, 1.0: None}
-    for lmbda in lmbdas:
+    for lmbda in tqdm(lmbdas, desc="SARSA-lambda for various lambda values"):
+        # q_sarsa, msas_ = sarsa_lambda(n_episodes=1000, lmbda=lmbda, calculate_msa=True, q_target=q_mc)
         q_sarsa, msas_ = sarsa_lambda(n_episodes=1000, lmbda=lmbda, calculate_msa=True, q_target=q_mc)
         if lmbda in [0.0, 1.0]:
             # Save msa for every episode for lambda=0 and lambda=1.

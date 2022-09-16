@@ -5,12 +5,13 @@ from util import Action, State, init_state
 from step import step
 
 import numpy as np
+from tqdm import tqdm
 
 
 rng = np.random.default_rng()
 
 
-def mc_control(n_episodes: int = 1000, cache: bool = True) -> Dict[State, Dict[Action, float]]:
+def mc_control(n_episodes: int = 1000) -> Dict[State, Dict[Action, float]]:
     """
     Apply generalized policy iteration using Monte-Carlo evaluation and
     epsilon-greedy learning.
@@ -31,14 +32,13 @@ def mc_control(n_episodes: int = 1000, cache: bool = True) -> Dict[State, Dict[A
 
     Args:
         n_episodes: number of episodes to run MC control
-        cache: cache the result
     Returns:
         state-action function Q(s, a)
     """
     state_to_action_counts = defaultdict(lambda: {Action.HIT: 0, Action.STICK: 0})
     state_to_action_values = defaultdict(lambda: {Action.HIT: 0, Action.STICK: 0})
 
-    for _ in range(n_episodes):
+    for _ in tqdm(range(n_episodes), desc="MC learning"):
         seen = defaultdict(lambda: {Action.HIT: False, Action.STICK: False})
         history = deque()  # history containing tuples (s_t, a_t, r_{t+1})
         s = init_state() 

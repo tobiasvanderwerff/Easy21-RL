@@ -10,7 +10,7 @@ import numpy as np
 rng = np.random.default_rng()
 
 
-def mc_control(n_episodes: int = 1000) -> Dict[State, Dict[Action, float]]:
+def mc_control(n_episodes: int = 1000, cache: bool = True) -> Dict[State, Dict[Action, float]]:
     """
     Apply generalized policy iteration using Monte-Carlo evaluation and
     epsilon-greedy learning.
@@ -31,6 +31,7 @@ def mc_control(n_episodes: int = 1000) -> Dict[State, Dict[Action, float]]:
 
     Args:
         n_episodes: number of episodes to run MC control
+        cache: cache the result
     Returns:
         state-action function Q(s, a)
     """

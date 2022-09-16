@@ -24,6 +24,8 @@ Action-value function using MC evaluation and decaying epsilon-greedy policy imp
 ![monte-carlo](img/mc-500000.png)
 
 
-## SARSA-lambda
+## SARSA(λ)
 
 ![sarsa-lambda](img/SARSA_performance.png)
+
+![sarsa-learning-curves](img/sarsa-lambda_learning_curves.png)

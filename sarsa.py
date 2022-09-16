@@ -1,5 +1,5 @@
 from collections import defaultdict, deque
-from typing import Dict
+from typing import Dict, List, Optional, Tuple
 import random
 
 from util import Action, State, init_state
@@ -9,12 +9,26 @@ from mc import epsilon_greedy_sample, get_epsilon
 import numpy as np
 
 
-def sarsa_lambda(n_episodes: int, lmbda: float) -> Dict[State, Dict[Action, float]]:
-    """Control using SARSA and TD-lambda."""
+def sarsa_lambda(n_episodes: int, lmbda: float, calculate_msa: bool = False, 
+                 q_target: Optional[Dict[State, Dict[Action, float]]] = None
+                 ) -> Tuple[Dict[State, Dict[Action, float]], List[float]]:
+    """
+    Control using SARSA and TD-lambda.
+    
+    Args:
+        n_episodes: number of episodes to run the algorithm
+        lmbda: lambda parameter for SARSA-lambda
+        calculate_msa: whether to calculate mean-squared error every episode. If True, `q_target` must be set.
+        q_target: target q function, used for calculating mean-squared error
+    Returns:
+        - learned state-action function
+        - msa per episode (optional)
+    """
     state_to_action_counts = defaultdict(lambda: {Action.HIT: 0, Action.STICK: 0})
     state_to_action_values = defaultdict(lambda: {Action.HIT: 0, Action.STICK: 0})
+    msa_per_episode = [0 for _ in range(n_episodes)] if calculate_msa else None
 
-    for _ in range(n_episodes):
+    for ep in range(n_episodes):
         state_to_action_etrace = defaultdict(lambda: {Action.HIT: 0, Action.STICK: 0})  # eligibility traces
         s = init_state()
         # Select initial action.
@@ -47,4 +61,8 @@ def sarsa_lambda(n_episodes: int, lmbda: float) -> Dict[State, Dict[Action, floa
                     state_to_action_etrace[s_][a_] *= lmbda  # update eligibility trace
             s = s_new
             a = a_new
-    return state_to_action_values
+        # Calculate mean-squared error.
+        if calculate_msa:
+            msa = sum((state_to_action_values[s][a] - q_target[s][a]) ** 2 for s, av in q_target.items() for a, v in av.items()) / (len(q_target) * 2)
+            msa_per_episode[ep] = msa
+    return state_to_action_values, msa_per_episode

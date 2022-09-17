@@ -36,6 +36,8 @@ Cons:
 
 ## Monte-Carlo Control
 
+See `exercise2.py`.
+
 Action-value function using MC evaluation and decaying epsilon-greedy policy improvement (asymptotically converges to the optimal action-value function):
 
 ![monte-carlo-heatmap](img/mc-500000-heatmap.png)
@@ -43,6 +45,8 @@ Action-value function using MC evaluation and decaying epsilon-greedy policy imp
 ![monte-carlo-3d](img/mc-500000-3d.png)
 
 ## SARSA(λ)
+
+See `question3.py`.
 
 ![sarsa-lambda](img/sarsa-lambda-against-msa.png)
 
@@ -55,6 +59,8 @@ SARSA(0) is biased in the sense that it only considers the current reward and th
 Because SARSA(1) implies more variance, it makes sense to me that it takes longer for it to converge to a low error. For SARSA(0), I would expect it to learn faster, but perhaps not converge to the optimal value function. Looking at the plot above, after 10,000 episodes, SARSA(0) outperforms SARSA(1). It may be that because the Easy21 game is inherently Markov (i.e. the current state is sufficient to predict the future), looking at only the immediate reward and state value is sufficient to effectively learn the value function (which is done in SARSA(0)).
 
 ## Linear Function Approximation
+
+See `question4.py`.
 
 ![sarsa-lambda-fapprox](img/sarsa-fapprox-lambda-against-msa.png)
 

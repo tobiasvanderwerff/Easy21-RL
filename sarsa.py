@@ -1,6 +1,7 @@
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, Tuple
 import random
+from function_approx import state_to_features
 
 from util import Action, State, init_state
 from step import step 
@@ -11,7 +12,7 @@ import numpy as np
 
 def sarsa_lambda(n_episodes: int, lmbda: float, calculate_msa: bool = False, 
                  q_target: Optional[Dict[State, Dict[Action, float]]] = None
-                 ) -> Tuple[Dict[State, Dict[Action, float]], List[float]]:
+                 ) -> Tuple[Dict[State, Dict[Action, float]], Optional[List[float]]]:
     """
     Control using SARSA and TD-lambda.
     
@@ -66,3 +67,55 @@ def sarsa_lambda(n_episodes: int, lmbda: float, calculate_msa: bool = False,
             msa = sum((state_to_action_values[s][a] - q_target[s][a]) ** 2 for s, av in q_target.items() for a, v in av.items()) / (len(q_target) * 2)
             msa_per_episode[ep] = msa
     return state_to_action_values, msa_per_episode
+
+
+def sarsa_lambda_fapprox(n_episodes: int, lmbda: float, epsilon: float = 0.05, step_size: float = 0.01, n_features: int = 36,
+                         calculate_msa: bool = False, q_target: Optional[Dict[State, Dict[Action, float]]] = None,
+                        ) -> Tuple[np.ndarray, Optional[List[float]]]:
+    """
+    Control using SARSA-lambda and linear function approximation. Incremental updates are used to train
+    the function approximator.
+    
+    Args:
+        n_episodes: number of episodes to run the algorithm
+        lmbda: lambda parameter for SARSA-lambda
+        epsilon: epsilon for epsilon-greedy exploration
+        step_size: step size (learning rate) for updating state-action values
+        n_features: number of features in the feature vector used for linear function approximation
+        calculate_msa: whether to calculate mean-squared error every episode. If True, `q_target` must be set.
+        q_target: target q function, used for calculating mean-squared error
+    Returns:
+        - learned state-action function
+        - msa per episode (optional)
+    """
+    msa_per_episode = [0 for _ in range(n_episodes)] if calculate_msa else None
+    actions = [Action.HIT, Action.STICK]
+    # Initialize weights to zero to make initial outputs and updates zero. 
+    w = np.zeros((n_features,))  
+    etrace = np.zeros((n_features,))
+
+    for ep in range(n_episodes):
+        s = init_state()
+        # Select initial action.
+        actions.sort(key=lambda a: w.T @ state_to_features(s, a), reverse=True)
+        a = actions[0]
+        while not s.is_terminal:
+            # Take action.
+            s_new, r = step(s, a)
+            # Sample the next action.
+            actions.sort(key=lambda a: w.T @ state_to_features(s, a), reverse=True)
+            a_new = epsilon_greedy_sample(actions, epsilon)
+
+            # Given quintuple (s, a, r, s_new, a_new), update the action-value function using backward-view TD-lambda.
+            td_error = r + w.T @ state_to_features(s_new, a_new) - w.T @ state_to_features(s, a)
+            etrace += state_to_features(s, a)
+            w += step_size * td_error * etrace
+            etrace *= lmbda
+
+            s = s_new
+            a = a_new
+        # Calculate mean-squared error.
+        if calculate_msa:
+            msa = sum((w.T @ state_to_features(s, a) - q_target[s][a]) ** 2 for s, av in q_target.items() for a, v in av.items()) / (len(q_target) * 2)
+            msa_per_episode[ep] = msa
+    return w, msa_per_episode
